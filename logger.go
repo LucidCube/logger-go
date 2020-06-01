@@ -1,13 +1,8 @@
 package logger
 
 import (
-	"go.opencensus.io/trace"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-)
-
-var (
-	logger *zap.Logger
 )
 
 // Format specifies the log output format
@@ -21,21 +16,27 @@ const (
 
 // Default format is format lines
 var (
+	logger        *zap.Logger
+	isInitialized = false
+
 	currentFormat = FormatLines
 	debugLogging  = false
 )
 
 // SetFormat sets the log output format
 func SetFormat(format Format) {
+	if isInitialized {
+		logger.Warn("logger already initialized when setting format")
+	}
 	currentFormat = format
 }
 
 // EnableDebugLogging outputs debug logs and trace logs
-func EnableDebugLogging(exp trace.Exporter) {
+func EnableDebugLogging() {
+	if isInitialized {
+		logger.Warn("logger already initialized when enabling debug")
+	}
 	debugLogging = true
-	trace.WithSampler(trace.AlwaysSample())
-	trace.RegisterExporter(exp)
-	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 }
 
 // Instance is the logger instance
@@ -69,6 +70,7 @@ func Instance() *zap.Logger {
 			cfg.EncoderConfig = zap.NewDevelopmentEncoderConfig()
 		}
 		logger, _ = cfg.Build()
+		isInitialized = true
 	}
 	return logger
 }

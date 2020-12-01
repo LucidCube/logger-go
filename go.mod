@@ -1,4 +1,4 @@
-module github.com/LucidCube/logger-go
+module github.com/lucidcube/logger-go
 
 go 1.14
 

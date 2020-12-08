@@ -31,12 +31,13 @@ var (
 	logCtx        context.Context
 )
 
-func SetContext(ctx context.Context, requestID string) {
-	ctxRequestID, ok := ctx.Value(requestIdKey).(string)
-	if !ok || len(ctxRequestID) == 0 {
-		ctx = context.WithValue(ctx, requestIdKey, requestID)
-	}
+//WithRequestID sets a requestID value in ctx
+func WithRequestID(ctx context.Context, requestID string) context.Context {
+	return context.WithValue(ctx, requestIdKey, requestID)
+}
 
+//SetContext sets context on logger
+func SetContext(ctx context.Context) {
 	logCtx = ctx
 }
 
@@ -92,7 +93,7 @@ func Instance() *zap.Logger {
 
 	if logCtx != nil {
 		if ctxRequestID, ok := logCtx.Value(requestIdKey).(string); ok {
-			logger = logger.With(zap.String("REQUEST_ID", ctxRequestID))
+			return logger.With(zap.String("REQUEST_ID", ctxRequestID))
 		}
 	}
 

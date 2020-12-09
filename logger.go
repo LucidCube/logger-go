@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"context"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -15,12 +14,6 @@ const (
 	FormatGoogleCloud
 )
 
-type correlationIdType int
-
-const (
-	requestIdKey correlationIdType = iota
-)
-
 // Default format is format lines
 var (
 	logger        *zap.Logger
@@ -28,17 +21,12 @@ var (
 
 	currentFormat = FormatLines
 	debugLogging  = false
-	logCtx        context.Context
+	requestID     string
 )
 
-//WithRequestID sets a requestID value in ctx
-func WithRequestID(ctx context.Context, requestID string) context.Context {
-	return context.WithValue(ctx, requestIdKey, requestID)
-}
-
-//SetContext sets context on logger
-func SetContext(ctx context.Context) {
-	logCtx = ctx
+//WithRequestID sets a requestID value on logger
+func WithRequestID(id string) {
+	requestID = id
 }
 
 // SetFormat sets the log output format
@@ -91,10 +79,8 @@ func Instance() *zap.Logger {
 		isInitialized = true
 	}
 
-	if logCtx != nil {
-		if ctxRequestID, ok := logCtx.Value(requestIdKey).(string); ok {
-			return logger.With(zap.String("REQUEST_ID", ctxRequestID))
-		}
+	if len(requestID) > 0 {
+		return logger.With(zap.String("REQUEST_ID", requestID))
 	}
 
 	return logger
